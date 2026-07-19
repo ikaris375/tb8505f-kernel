@@ -80,7 +80,7 @@ int als_flush_report(void)
 	return err;
 }
 
-int rgbw_data_report(int *value)
+int rgbw_data_report(int value[4])
 {
 	int err = 0;
 	struct alsps_context *cxt = alsps_context_obj;
@@ -865,7 +865,7 @@ static ssize_t ps_store_change_mode(struct device *dev, struct device_attribute 
 		return -ENOMEM;
 
 	//memcpy(tmp_buf, buf, count);
-    sscanf(buf,"%d",tmp_buf);
+    sscanf(buf,"%hhu",tmp_buf);
 
 	mutex_lock(&alsps_context_obj->alsps_op_mutex);
 	cxt = alsps_context_obj;

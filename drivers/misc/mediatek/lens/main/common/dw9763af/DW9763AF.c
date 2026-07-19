@@ -306,10 +306,12 @@ static inline int moveAF(unsigned long a_u4Position)
     g_i4MotorStatus = 0;
     spin_unlock(g_pAF_SpinLock);
 
-    if(s4AF_WriteReg((unsigned short)g_u4TargetPosition) == 0)
+    if (s4AF_WriteReg((unsigned short)g_u4TargetPosition) == 0)
     {
         spin_lock(g_pAF_SpinLock);
-        LOG_INF("move [curr] %d [target] %d\n", g_u4CurrPosition, g_u4TargetPosition);
+        LOG_INF("move [curr] %lu [target] %lu\n",
+                g_u4CurrPosition,
+                g_u4TargetPosition);
         g_u4CurrPosition = (unsigned long)g_u4TargetPosition;
         spin_unlock(g_pAF_SpinLock);
     }
