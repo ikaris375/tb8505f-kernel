@@ -17,7 +17,7 @@ ccflags-y +=	\
 	-I$(srctree)/drivers/misc/mediatek/base/power/cpufreq_v2/src/mach/$(CONFIG_MTK_PLATFORM)	\
 	-I$(srctree)/drivers/misc/mediatek/thermal/$(CONFIG_MTK_PLATFORM)/inc/  \
 	-I$(srctree)/drivers/misc/mediatek/base/power/include
-
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/ppm_v3/src/mach/mt6761
 # platform dependent functions
 obj-y += mtk_ppm_platform.o
 # power data related

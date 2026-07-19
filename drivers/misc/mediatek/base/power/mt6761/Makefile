@@ -30,6 +30,7 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/freqhopping/$(MTK_PLATFORM)/
 ccflags-y += -I$(srctree)/drivers/devfreq/
 ccflags-y += -Wno-unused-variable
 ccflags-y += -Wno-unused-function
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/mt6761
 
 ifeq ($(CONFIG_MACH_MT6761),y)
     ccflags-y += -I$(srctree)/drivers/misc/mediatek/cmdq/v3/mt6765/
