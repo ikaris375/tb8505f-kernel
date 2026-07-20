@@ -585,7 +585,7 @@ static void process_dbg_opt(const char *opt)
 		static const char temp[] = "set_dsi_cmd:0x%x";
 
 		memset(fmt, 0, sizeof(fmt));
-		strncpy((char *)fmt, (char *)temp, sizeof(temp));
+		strscpy(fmt, temp, sizeof(fmt));
 
 		for (i = 0; i < ARRAY_SIZE(para); i++)
 			strncat(fmt, ",0x%hhx", sizeof(fmt) - strlen(fmt) - 1);
@@ -708,7 +708,7 @@ static ssize_t debug_lcd_reg_dump(struct file *file, char __user *buf,
 
 	str1 = kmalloc(128, GFP_KERNEL);
 	    if (!str1) {
-		    pr_err("%s: sh could not allocate a buffer \n");
+		    pr_err("%s: sh could not allocate a buffer\n", __func__);
 		        return -1;
 	    }
 

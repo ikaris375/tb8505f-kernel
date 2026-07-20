@@ -19,6 +19,7 @@ subdir-ccflags-y += -Werror -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$
 subdir-ccflags-y += -Werror -I$(srctree)/drivers/misc/mediatek/include/mt-plat
 subdir-ccflags-y += -Werror -I$(srctree)/drivers/misc/mediatek/pmic/include
 subdir-ccflags-y += -Werror -I$(srctree)/drivers/power/supply/mediatek/misc
+subdir-ccflags-y += -Werror -I$(srctree)/drivers/power/supply/mediatek/battery
 subdir-ccflags-y += -Werror -I$(srctree)/drivers/misc/mediatek/auxadc/
 
 ifeq ($(CONFIG_MTK_GAUGE_VERSION),30)

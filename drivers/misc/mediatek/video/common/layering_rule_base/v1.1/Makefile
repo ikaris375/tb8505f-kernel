@@ -24,6 +24,8 @@ ccflags-y += \
 ccflags-y += \
                                 -I$(srctree)/drivers/misc/mediatek/cmdq/v3/
 
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/video/common/layering_rule_base/v1.1
+
 ifeq ($(CONFIG_MACH_MT6761),y)
     ccflags-y += -I$(srctree)/drivers/misc/mediatek/cmdq/v3/mt6765/
 else
