@@ -254,7 +254,14 @@ static int mtk_i2s0_awb_pcm_hw_params(struct snd_pcm_substream *substream,
 	return ret;
 }
 
-extern  int check_dbmdx_status(void);
+#ifdef CONFIG_SND_SOC_DBMDX
+extern int check_dbmdx_status(void);
+#else
+static inline int check_dbmdx_status(void)
+{
+        return 0;
+}
+#endif
 	
 static int mtk_i2s0_capture_pcm_hw_free(struct snd_pcm_substream *substream)
 {
