@@ -126,7 +126,7 @@ extern unsigned char s5k4h7_lsc_data_valid;
 #endif
 
 //s5k4h7_qtech
-#define S5K4H7QTECH_OTP  1
+#define S5K4H7QTECH_OTP  0
 #if S5K4H7QTECH_OTP
 #define S5K4H7_OTP_SIZE 0x073B + 1
 extern unsigned char s5k4h7_otp_data1[S5K4H7_OTP_SIZE];

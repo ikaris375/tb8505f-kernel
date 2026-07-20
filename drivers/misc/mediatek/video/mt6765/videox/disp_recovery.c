@@ -101,7 +101,13 @@ static unsigned int extd_esd_check_mode;
 static unsigned int extd_esd_check_enable;
 #endif
 
+#ifdef CONFIG_TOUCHSCREEN_MTK_FOCALTECH_TS
 extern int lcd_need_reset;
+#elif defined(CONFIG_TOUCHSCREEN_MTK_FHD_FOCALTECH_TS)
+extern int lcd_need_reset;
+#else
+static int lcd_need_reset;
+#endif
 
 unsigned int get_esd_check_mode(void)
 {
