@@ -117,7 +117,7 @@ obj-y += cmdq_driver.o
 # obj-y += cmdq_mmp.o
 obj-y += cmdq_mdp_common.o
 obj-y += cmdq_prof.o
-obj-y += cmdq_test.o
+obj-$(CONFIG_MTK_CMDQ_TEST) += cmdq_test.o
 ifneq ($(CONFIG_MTK_CMDQ_TAB),y)
 obj-y += cmdq_sec.o
 else

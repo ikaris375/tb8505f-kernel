@@ -75,7 +75,7 @@ static unsigned int g_lastDevID = SENSOR_DEV_NONE;
 #define VENDOR_ID_DATA_SIZE 1
 
 #define MODULE_AF_DATA_SIZE 5
-#define HI556_OTP_FUNCTION 1
+#define HI556_OTP_FUNCTION 0
 #if HI556_OTP_FUNCTION
 #define HI556_LSC_DATA_SIZE 1868
 #define HI556_AWB_DATA_SIZE 16
@@ -87,21 +87,21 @@ extern unsigned char hi556_lsc_valid;
 extern unsigned char hi556_awb_valid;
 extern unsigned char hi556_af_valid;
 #endif
-#define GC5035_OTP_FUNCTION 1
+#define GC5035_OTP_FUNCTION 0
 #if GC5035_OTP_FUNCTION
 extern unsigned char gc5035_module_id;
 extern unsigned char gc5035_data_af[MODULE_AF_DATA_SIZE];
 extern unsigned char gc5035_data_awb[6];
 #endif
 
-#define GC5035B_OTP_FUNCTION 1
+#define GC5035B_OTP_FUNCTION 0
 #if GC5035B_OTP_FUNCTION
 extern unsigned char gc5035b_module_id;
 extern unsigned char gc5035b_data_af[MODULE_AF_DATA_SIZE];
 extern unsigned char  gc5035b_data_awb[6];
 
 #endif
-#define S5K4H7_OTP  1
+#define S5K4H7_OTP  0
 
 #if S5K4H7_OTP
 #define S5K4H7_OTP_SIZE 0x073B + 1
