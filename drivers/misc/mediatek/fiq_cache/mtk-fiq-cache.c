@@ -31,11 +31,22 @@ void mt_fiq_cache_flush_all(void)
 
 static int __init fiq_cache_init(void)
 {
+        unsigned long *step;
 
-	mt_secure_call(MTK_SIP_KERNEL_CACHE_FLUSH_INIT,
-		(unsigned long)aee_rr_rec_fiq_cache_step_pa(),
-		0, 0, 0);
+        step = aee_rr_rec_fiq_cache_step_pa();
 
-	return 0;
+        pr_info("[FIQ_CACHE] step = %px\n", step);
+
+        if (!step) {
+                pr_warn("[FIQ_CACHE] ram_console unavailable, skipping init\n");
+                return 0;
+        }
+
+        mt_secure_call(MTK_SIP_KERNEL_CACHE_FLUSH_INIT,
+                (unsigned long)step,
+                0, 0, 0);
+
+        return 0;
 }
+
 module_init(fiq_cache_init);

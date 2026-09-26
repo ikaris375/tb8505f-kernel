@@ -698,29 +698,33 @@ static int mtktscharger_get_hw_temp(void)
 	/* ret = ret*1800/4096;//82's ADC power */
 	mtktscharger_dprintk("APtery output mV = %d\n", ret);
 	output = mtk_ts_btscharger_volt_to_temp(ret);
-	mtktscharger_dprintk("BTSCHARGER output temperature = %d\n", output);
+
+	pr_notice("BTSCHARGER RAW TEMP = %d C (adc=%d mV)\n",
+			output, ret);
+
 	return output;
 }
 /*[AKITA-8] m8 Charging bringup baidabin.wt 20190517 end*/
 
 static int mtktscharger_get_temp(struct thermal_zone_device *thermal, int *t)
 {
-/*[AKITA-8] m8 Charging bringup baidabin.wt 20190517 begin*/
-	*t = mtktscharger_get_hw_temp() * 1000;
-/*[AKITA-8] m8 Charging bringup baidabin.wt 20190517 end*/
-	mtktscharger_dprintk("%s %d\n", __func__, *t);
+        *t = mtktscharger_get_hw_temp() * 1000;
 
-	if (*t >= 85000)
-		mtktscharger_dprintk_always("HT %d\n", *t);
+        pr_notice("BTSCHARGER: temperature = %d mC\n", *t);
 
-	if ((int)*t >= polling_trip_temp1)
-		thermal->polling_delay = interval * 1000;
-	else if ((int)*t < polling_trip_temp2)
-		thermal->polling_delay = interval * polling_factor2;
-	else
-		thermal->polling_delay = interval * polling_factor1;
+        mtktscharger_dprintk("%s %d\n", __func__, *t);
 
-	return 0;
+		if (*t >= 85000)
+			mtktscharger_dprintk_always("HT %d\n", *t);
+
+		if ((int)*t >= polling_trip_temp1)
+			thermal->polling_delay = interval * 1000;
+		else if ((int)*t < polling_trip_temp2)
+			thermal->polling_delay = interval * polling_factor2;
+		else
+			thermal->polling_delay = interval * polling_factor1;
+
+		return 0;
 }
 
 static int mtktscharger_bind(
@@ -888,21 +892,17 @@ static int mtktscharger_sysrst_set_cur_state(
 struct thermal_cooling_device *cdev, unsigned long state)
 {
 	cl_dev_sysrst_state = state;
-	if (cl_dev_sysrst_state == 1) {
-		pr_notice("[Thermal/mtktscharger_sysrst] reset, reset, reset!!!\n");
-		pr_notice("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
-		pr_notice("*****************************************\n");
-		pr_notice("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 
-		/* To trigger data abort to reset the system
-		 * for thermal protection.
-		 */
-		BUG();
+	if (cl_dev_sysrst_state == 1) {
+		pr_notice("[Thermal/mtktscharger_sysrst] Thermal reset BLOCKED for debugging!\n");
+
+		/* Ignore the request to crash the kernel */
+		cl_dev_sysrst_state = 0;
+		return 0;
 	}
 
 	return 0;
 }
-
 static struct thermal_cooling_device_ops mtktscharger_cooling_sysrst_ops = {
 	.get_max_state = mtktscharger_sysrst_get_max_state,
 	.get_cur_state = mtktscharger_sysrst_get_cur_state,
@@ -1166,7 +1166,7 @@ static int mtktscharger_pdrv_probe(struct platform_device *pdev)
 
 	err = mtktscharger_register_thermal();
 	if (err)
-		goto err_unreg;
+		goto err_unreg; 
 
 	mtktscharger_dir = mtk_thermal_get_proc_drv_therm_dir_entry();
 	if (!mtktscharger_dir) {
@@ -1184,7 +1184,7 @@ static int mtktscharger_pdrv_probe(struct platform_device *pdev)
 err_unreg:
 	mtktscharger_unregister_cooler();
 
-	return 0;
+	return 0; 
 }
 
 static int mtktscharger_pdrv_remove(struct platform_device *pdev)
@@ -1209,76 +1209,57 @@ static struct platform_driver mtktscharger_driver = {
 
 static int __init mtktscharger_init(void)
 {
-	int err = 0;
+        int err = 0;
 #if (CONFIG_MTK_GAUGE_VERSION == 30)
-	/* Move this segment to probe function
-	 * in case mtktscharger reads temperature
-	 * before mtk_charger allows it.
-	 */
 #else
-	struct proc_dir_entry *entry = NULL;
-	struct proc_dir_entry *mtktscharger_dir = NULL;
+        struct proc_dir_entry *entry = NULL;
+        struct proc_dir_entry *mtktscharger_dir = NULL;
 #endif
-/*[AKITA-8] m8 Charging bringup baidabin.wt 20190517 begin*/		
-	mtkts_btscharger_prepare_table(g_RAP_ntc_table);
-/*[AKITA-8] m8 Charging bringup baidabin.wt 20190517 end*/
-	err = mtktscharger_register_cooler();
-	if (err)
-		return err;
+
+        mtkts_btscharger_prepare_table(g_RAP_ntc_table);
+
+        err = mtktscharger_register_cooler();
+        if (err)
+                return err;
 
 #if (CONFIG_MTK_GAUGE_VERSION == 30)
-	/* Move this segment to probe function
-	 * in case mtktscharger reads temperature
-	 * before mtk_charger allows it.
-	 */
+
+        err = platform_device_register(&mtktscharger_device);
+        if (err)
+                goto err_unreg;
+
+        err = platform_driver_register(&mtktscharger_driver);
+        if (err)
+                goto reg_platform_driver_fail;
+
 #else
-	err = mtktscharger_register_thermal();
-	if (err)
-		goto err_unreg;
 
-	mtktscharger_dir = mtk_thermal_get_proc_drv_therm_dir_entry();
-	if (!mtktscharger_dir) {
-		mtktscharger_dprintk("%s get /proc/driver/thermal failed\n",
-								__func__);
-	} else {
-		entry = proc_create("tzcharger", 0664, mtktscharger_dir,
-							&mtktscharger_fops);
-		if (entry)
-			proc_set_user(entry, uid, gid);
-	}
+        err = mtktscharger_register_thermal();
+        if (err)
+                goto err_unreg;
+
+        mtktscharger_dir = mtk_thermal_get_proc_drv_therm_dir_entry();
+
+        if (mtktscharger_dir) {
+                entry = proc_create("tzcharger", 0664,
+                                    mtktscharger_dir,
+                                    &mtktscharger_fops);
+                if (entry)
+                        proc_set_user(entry, uid, gid);
+        }
+
 #endif
 
-#if (CONFIG_MTK_GAUGE_VERSION == 30)
-	/* TODO: consider not to register a charger thermal zone
-	 * if not PEP30 or dual charger.
-	 */
-	/* register platform device/driver
-	 */
-	err = platform_device_register(&mtktscharger_device);
-	if (err) {
-		mtktscharger_dprintk("%s fail to reg device\n", __func__);
-		goto err_unreg;
-	}
-
-	err = platform_driver_register(&mtktscharger_driver);
-	if (err) {
-		mtktscharger_dprintk("%s fail to reg driver\n", __func__);
-		goto reg_platform_driver_fail;
-	}
-#endif
-
-	return 0;
+        return 0;
 
 #if (CONFIG_MTK_GAUGE_VERSION == 30)
 reg_platform_driver_fail:
-	platform_device_unregister(&mtktscharger_device);
+        platform_device_unregister(&mtktscharger_device);
 #endif
 
 err_unreg:
-
-	mtktscharger_unregister_cooler();
-
-	return err;
+        mtktscharger_unregister_cooler();
+        return err;
 }
 
 static void __exit mtktscharger_exit(void)

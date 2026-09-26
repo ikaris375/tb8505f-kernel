@@ -32,6 +32,7 @@
 #include <linux/of_reserved_mem.h>
 #include <linux/pstore.h>
 #include <linux/io.h>
+#include <linux/printk.h>
 #include <mt-plat/aee.h>
 #include "ram_console.h"
 #include <mach/memory_layout.h>
@@ -47,6 +48,8 @@ static int ram_console_init_done;
 static unsigned int old_wdt_status;
 static int ram_console_clear;
 static bool reserve_mem_fail;
+static phys_addr_t ram_console_reserved_base;
+static size_t ram_console_reserved_size;
 
 /*
  *  This group of API call by sub-driver module to report reboot reasons
@@ -644,19 +647,35 @@ struct mem_desc_t {
 static int __init dt_get_ram_console(unsigned long node, const char *uname,
 		int depth, void *data)
 {
-	struct mem_desc_t *sram;
+	const __be32 *prop;
+	int len;
 
 	if (depth != 1 || (strcmp(uname, "chosen") != 0
-			&& strcmp(uname, "chosen@0") != 0))
-		return 0;
+        	&& strcmp(uname, "chosen@0") != 0))
+    	return 0;
 
-	sram = (struct mem_desc_t *) of_get_flat_dt_prop(node,
-			"ram_console", NULL);
-	if (sram) {
-		pr_notice("ram_console:[DT] 0x%lx@0x%lx\n",
-				sram->size, sram->start);
-		*(struct mem_desc_t *) data = *sram;
-	}
+	prop = of_get_flat_dt_prop(node, "ram_console", &len);
+
+	if (!prop)
+			return 1;
+
+	pr_notice("ram_console: property length = %d bytes\n", len);
+
+	print_hex_dump(KERN_NOTICE,
+			"ram_console raw: ",
+			DUMP_PREFIX_NONE,
+			16,
+			1,
+			prop,
+			len,
+			false);
+
+	((struct mem_desc_t *)data)->start = of_read_number(prop, 2);
+	((struct mem_desc_t *)data)->size  = of_read_number(prop + 2, 2);
+
+	pr_notice("ram_console:[DT] start=0x%lx size=0x%lx\n",
+			((struct mem_desc_t *)data)->start,
+			((struct mem_desc_t *)data)->size);
 
 	return 1;
 }
@@ -665,30 +684,49 @@ static int __init dt_get_ram_console(unsigned long node, const char *uname,
 
 static int __init ram_console_early_init(void)
 {
+	
 	struct ram_console_buffer *bufp = NULL;
 	size_t buffer_size = 0;
 #if defined(CONFIG_MTK_RAM_CONSOLE_USING_SRAM)
 #ifdef CONFIG_OF
 	struct mem_desc_t sram = { 0 };
 
-	if (of_scan_flat_dt(dt_get_ram_console, &sram)) {
-		if (sram.start == 0) {
-			sram.start = CONFIG_MTK_RAM_CONSOLE_ADDR;
-			sram.size = CONFIG_MTK_RAM_CONSOLE_SIZE;
-		}
-		bufp = ioremap_wc(sram.start, sram.size);
-		ram_console_buffer_pa = (struct ram_console_buffer *)sram.start;
-		if (bufp)
+	/* Prefer reserved-memory if available */
+	if (ram_console_reserved_base && ram_console_reserved_size) {
+
+			sram.start = ram_console_reserved_base;
+			sram.size  = ram_console_reserved_size;
+
+			pr_notice("DEBUG: using reserved-memory start=0x%lx size=0x%lx\n",
+					sram.start,
+					sram.size);
+
+	} else if (of_scan_flat_dt(dt_get_ram_console, &sram)) {
+
+			if (sram.start == 0) {
+					sram.start = CONFIG_MTK_RAM_CONSOLE_ADDR;
+					sram.size = CONFIG_MTK_RAM_CONSOLE_SIZE;
+			}
+	} else {
+        	return 0;
+	}
+
+	/* ---------- COMMON PATH ---------- */
+	bufp = ioremap_wc(sram.start, sram.size);
+	ram_console_buffer_pa = (struct ram_console_buffer *)sram.start;
+	pr_notice("DEBUG: ram_console_buffer_pa=%px start=0x%lx size=0x%lx\n",
+			ram_console_buffer_pa,
+			sram.start,
+			sram.size);
+	if (bufp)
 			buffer_size = sram.size;
-		else {
+	else {
 			pr_err("ram_console: ioremap failed, [0x%lx, 0x%lx]\n",
 					sram.start,
-			       sram.size);
+					sram.size);
 			return 0;
-		}
-	} else {
-		return 0;
 	}
+
 #else
 	bufp = ioremap_wc(CONFIG_MTK_RAM_CONSOLE_ADDR,
 			CONFIG_MTK_RAM_CONSOLE_SIZE);
@@ -697,7 +735,8 @@ static int __init ram_console_early_init(void)
 		ram_console_buffer_pa = CONFIG_MTK_RAM_CONSOLE_ADDR;
 	else {
 		pr_err("ram_console: ioremap failed, [0x%x, 0x%x]\n",
-				sram.start, sram.size);
+       		CONFIG_MTK_RAM_CONSOLE_ADDR,
+       		CONFIG_MTK_RAM_CONSOLE_SIZE);
 		return 0;
 	}
 #endif
@@ -718,6 +757,9 @@ static int __init ram_console_early_init(void)
 	pr_notice("ram_console: buffer start: 0x%p, size: 0x%zx\n",
 			bufp, buffer_size);
 	mtk_cpu_num = num_present_cpus();
+	pr_notice("DEBUG: bufp=%px pa=%px\n",
+        bufp,
+        ram_console_buffer_pa);
 	return ram_console_init(bufp, buffer_size);
 }
 
@@ -793,6 +835,13 @@ int ram_console_binary_reserve_memory(struct reserved_mem *rmem)
 		 (unsigned long long)rmem->base +
 		 (unsigned long long)rmem->size,
 		 (unsigned long long)rmem->size);
+
+	ram_console_reserved_base = rmem->base;
+	ram_console_reserved_size = rmem->size;
+
+	pr_notice("DEBUG: reserved base=%pa size=%zx\n",
+          	&ram_console_reserved_base,
+          	ram_console_reserved_size);
 	return 0;
 }
 
@@ -1149,6 +1198,9 @@ unsigned long *aee_rr_rec_mtk_cpuidle_footprint_va(void)
 
 unsigned long *aee_rr_rec_fiq_cache_step_pa(void)
 {
+	pr_notice("FIQ_DEBUG: ram_console_buffer_pa=%px\n",
+        ram_console_buffer_pa);
+
 	if (ram_console_buffer_pa)
 		return (unsigned long *)&RR_LINUX_PA->fiq_cache_step;
 	else

@@ -1047,7 +1047,11 @@ struct disp_lcm_handle *disp_lcm_probe(char *plcm_name,
 	struct disp_lcm_handle *plcm = NULL;
 
 	DISPFUNC();
-	DISPCHECK("plcm_name=%s, is_lcm_inited %d\n", plcm_name, is_lcm_inited);
+	pr_notice("LCMDBG: ===== disp_lcm_probe =====\n");
+	pr_notice("LCMDBG: plcm_name=%s\n",
+			plcm_name ? plcm_name : "NULL");
+	pr_notice("LCMDBG: is_lcm_inited=%d\n", is_lcm_inited);
+	pr_notice("LCMDBG: lcm_count=%d\n", _lcm_count());
 
 	if (is_lcm_inited == 1){
 		strncpy(Lcm_name,plcm_name,strlen(plcm_name)+1);
@@ -1079,6 +1083,7 @@ struct disp_lcm_handle *disp_lcm_probe(char *plcm_name,
 #endif
 	if (_lcm_count() == 0) {
 		DISPERR("no lcm driver defined in linux kernel driver\n");
+		pr_notice("LCMDBG: _lcm_count == 0\n");
 		return NULL;
 	} else if (_lcm_count() == 1) {
 		if (plcm_name == NULL) {
@@ -1093,6 +1098,7 @@ struct disp_lcm_handle *disp_lcm_probe(char *plcm_name,
 				DISPERR(
 					"FATAL ERROR!!!LCM Driver defined in kernel(%s) is different with LK(%s)\n",
 				    lcm_drv->name, plcm_name);
+				pr_notice("LCMDBG: NAME MISMATCH\n");
 				return NULL;
 			}
 
@@ -1158,6 +1164,7 @@ struct disp_lcm_handle *disp_lcm_probe(char *plcm_name,
 		load_lcm_resources_from_DT(plcm->drv);
 #endif
 
+	pr_notice("LCMDBG: Selected driver = %s\n", plcm->drv->name);
 	plcm->drv->get_params(plcm->params);
 	plcm->lcm_if_id = plcm->params->lcm_if;
 

@@ -1400,7 +1400,7 @@ static const struct snd_soc_dai_ops ac107_dai_ops = {
 };
 
 /*** define  ac107  dai_driver struct ***/
-static const struct snd_soc_dai_driver ac107_dai0 = {
+static struct snd_soc_dai_driver ac107_dai0 = {
 	.name = "ac107-pcm0",
 	.capture = {
 		.stream_name = "Capture",
@@ -1412,7 +1412,7 @@ static const struct snd_soc_dai_driver ac107_dai0 = {
 	.ops = &ac107_dai_ops,
 };
 
-static const struct snd_soc_dai_driver ac107_dai1 = {
+static struct snd_soc_dai_driver ac107_dai1 = {
 	.name = "ac107-pcm1",
 	.capture = {
 		.stream_name = "Capture",
@@ -1424,7 +1424,7 @@ static const struct snd_soc_dai_driver ac107_dai1 = {
 	.ops = &ac107_dai_ops,
 };
 
-static const struct snd_soc_dai_driver ac107_dai2 = {
+static struct snd_soc_dai_driver ac107_dai2 = {
 	.name = "ac107-pcm2",
 	.capture = {
 		.stream_name = "Capture",
@@ -1436,7 +1436,7 @@ static const struct snd_soc_dai_driver ac107_dai2 = {
 	.ops = &ac107_dai_ops,
 };
 
-static const struct snd_soc_dai_driver ac107_dai3 = {
+static struct snd_soc_dai_driver ac107_dai3 = {
 	.name = "ac107-pcm3",
 	.capture = {
 		.stream_name = "Capture",
@@ -1448,7 +1448,7 @@ static const struct snd_soc_dai_driver ac107_dai3 = {
 	.ops = &ac107_dai_ops,
 };
 
-static const struct snd_soc_dai_driver ac107_dai4 = {
+static struct snd_soc_dai_driver ac107_dai4 = {
 	.name = "ac107-pcm4",
 	.capture = {
 		.stream_name = "Capture",
@@ -1460,7 +1460,7 @@ static const struct snd_soc_dai_driver ac107_dai4 = {
 	.ops = &ac107_dai_ops,
 };
 
-static const struct snd_soc_dai_driver ac107_dai5 = {
+static struct snd_soc_dai_driver ac107_dai5 = {
 	.name = "ac107-pcm5",
 	.capture = {
 		.stream_name = "Capture",
@@ -1472,7 +1472,7 @@ static const struct snd_soc_dai_driver ac107_dai5 = {
 	.ops = &ac107_dai_ops,
 };
 
-static const struct snd_soc_dai_driver ac107_dai6 = {
+static struct snd_soc_dai_driver ac107_dai6 = {
 	.name = "ac107-pcm6",
 	.capture = {
 		.stream_name = "Capture",
@@ -1484,7 +1484,7 @@ static const struct snd_soc_dai_driver ac107_dai6 = {
 	.ops = &ac107_dai_ops,
 };
 
-static const struct snd_soc_dai_driver ac107_dai7 = {
+static struct snd_soc_dai_driver ac107_dai7 = {
 	.name = "ac107-pcm7",
 	.capture = {
 		.stream_name = "Capture",
@@ -1496,7 +1496,7 @@ static const struct snd_soc_dai_driver ac107_dai7 = {
 	.ops = &ac107_dai_ops,
 };
 
-static const struct snd_soc_dai_driver *ac107_dai[] = {
+static struct snd_soc_dai_driver *ac107_dai[] = {
 	&ac107_dai0,
 	&ac107_dai1,
 	&ac107_dai2,

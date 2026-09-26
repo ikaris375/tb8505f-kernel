@@ -32,7 +32,7 @@
 	atag,videolfb-islcm_inited = <0>;
 	atag,videolfb-fps= <6000>;
 	atag,videolfb-vramSize= <0x017bb000>;
-	atag,videolfb-lcmname= "nt35521_hd_dsi_vdo_truly_rt5081_drv";
+	atag,videolfb-lcmname= "ili9881_bns080h030hd981d31d_wxga_hsd8";
 };
 
 &odm {
@@ -92,6 +92,128 @@
 		tui-size = <0 0>;
 		wfd-size = <0 0>;
 		prot-sharedmem-size = <0 0>;
+	};
+};
+
+/* LCM GPIO / pinctrl */
+&lcm {
+	pinctrl-names = "state_enp_output0", "state_enp_output1",
+			"state_enn_output0", "state_enn_output1",
+			"state_reset_output0", "state_reset_output1",
+			"state_tp_reset_output0", "state_tp_reset_output1",
+			"state_ldo_output0", "state_ldo_output1",
+			"state_led_output0", "state_led_output1";
+
+	pinctrl-0 = <&lcm_pins_enp_output0>;
+	pinctrl-1 = <&lcm_pins_enp_output1>;
+	pinctrl-2 = <&lcm_pins_enn_output0>;
+	pinctrl-3 = <&lcm_pins_enn_output1>;
+	pinctrl-4 = <&lcm_pins_rst_output0>;
+	pinctrl-5 = <&lcm_pins_rst_output1>;
+	pinctrl-6 = <&tp_pins_rst_output0>;
+	pinctrl-7 = <&tp_pins_rst_output1>;
+	pinctrl-8 = <&lcm_pins_ldo_output0>;
+	pinctrl-9 = <&lcm_pins_ldo_output1>;
+	pinctrl-10 = <&lcm_pins_led_output0>;
+	pinctrl-11 = <&lcm_pins_led_output1>;
+	status = "okay";
+};
+
+&pio {
+	lcm_pins_enp_output0: enpoutput0 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO167__FUNC_GPIO167>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	lcm_pins_enp_output1: enpoutput1 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO167__FUNC_GPIO167>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	lcm_pins_enn_output0: ennoutput0 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO168__FUNC_GPIO168>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	lcm_pins_enn_output1: ennoutput1 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO168__FUNC_GPIO168>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	lcm_pins_rst_output0: resetoutput0 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO45__FUNC_GPIO45>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	lcm_pins_rst_output1: resetoutput1 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO45__FUNC_GPIO45>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	tp_pins_rst_output0: tprstoutput0 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO172__FUNC_GPIO172>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	tp_pins_rst_output1: tprstoutput1 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO172__FUNC_GPIO172>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	lcm_pins_ldo_output0: ldooutput0 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO152__FUNC_GPIO152>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	lcm_pins_ldo_output1: ldooutput1 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO152__FUNC_GPIO152>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	lcm_pins_led_output0: ledoutput0 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO154__FUNC_GPIO154>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	lcm_pins_led_output1: ledoutput1 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO154__FUNC_GPIO154>;
+			slew-rate = <1>;
+			output-high;
+		};
 	};
 };
 

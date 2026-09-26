@@ -9,7 +9,7 @@ subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/mtprof
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/sched
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/mcdi/include
 
-obj-y     = fork.o exec_domain.o panic.o \
+obj-y     = acer_test_marker.o fork.o exec_domain.o panic.o \
 	    cpu.o exit.o softirq.o resource.o \
 	    sysctl.o sysctl_binary.o capability.o ptrace.o user.o \
 	    signal.o sys.o kmod.o workqueue.o pid.o task_work.o \

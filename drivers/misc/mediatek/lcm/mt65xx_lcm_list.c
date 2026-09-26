@@ -1096,9 +1096,12 @@ struct LCM_DRIVER *lcm_driver_list[] = {
 #endif
 
 #if defined(ILI9881C_HDP_DSI_VDO_ILITEK_RT5081)
-	&ili9881c_hdp_dsi_vdo_ilitek_rt5081_lcm_drv,
+        &ili9881c_hdp_dsi_vdo_ilitek_rt5081_lcm_drv,
 #endif
 
+#if defined(ILI9881C_BNS080H030HD981D31B_WXGA_HSD8)
+        &ili9881c_bns080h030hd981d31b_wxga_hsd8_lcm_drv,
+#endif
 #if defined(NT51021_WUXGA_DSI_VDO_MT8173)
 	&nt51021_wuxga_dsi_vdo_mt8173_lcm_drv,
 #endif
@@ -1203,7 +1206,11 @@ unsigned char lcm_name_list[][128] = {
 #endif
 
 #if defined(ILI9881C_HDP_DSI_VDO_ILITEK_RT5081)
-	"ili9881c_hdp_dsi_vdo_ilitek_rt5081_drv",
+        "ili9881c_hdp_dsi_vdo_ilitek_rt5081_drv",
+#endif
+
+#if defined(ILI9881C_BNS080H030HD981D31B_WXGA_HSD8)
+        "ili9881_bns080h030hd981d31d_wxga_hsd8",
 #endif
 
 #if defined(NT35695B_FHD_DSI_VDO_AUO_RT5081_HDP)

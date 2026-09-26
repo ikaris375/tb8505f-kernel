@@ -483,6 +483,10 @@ static int persistent_ram_post_init(struct persistent_ram_zone *prz, u32 sig,
 		return ret;
 
 	sig ^= PERSISTENT_RAM_SIG;
+	pr_emerg("PSTORE DEBUG: sig=0x%08x start=%zu size=%zu\n",
+		prz->buffer->sig,
+		buffer_start(prz),
+		buffer_size(prz));
 
 	if (prz->buffer->sig == sig) {
 		if (buffer_size(prz) > prz->buffer_size ||
@@ -493,6 +497,10 @@ static int persistent_ram_post_init(struct persistent_ram_zone *prz, u32 sig,
 			pr_debug("found existing buffer, size %zu, start %zu\n",
 				 buffer_size(prz), buffer_start(prz));
 			persistent_ram_save_old(prz);
+
+			pr_emerg("PSTORE DEBUG: FOUND OLD BUFFER size=%zu\n",
+	 			prz->old_log_size);
+
 			return 0;
 		}
 	} else {
@@ -503,6 +511,10 @@ static int persistent_ram_post_init(struct persistent_ram_zone *prz, u32 sig,
 	/* Rewind missing or invalid memory area. */
 	prz->buffer->sig = sig;
 	persistent_ram_zap(prz);
+
+	pr_emerg("PSTORE DEBUG: ZAPPED BUFFER start=%zu size=%zu\n",
+		buffer_start(prz),
+		buffer_size(prz));
 
 	return 0;
 }

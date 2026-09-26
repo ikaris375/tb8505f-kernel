@@ -614,12 +614,7 @@ static void pstore_simp_console_write(struct console *con, const char *s,
 
 void pstore_bconsole_write(struct console *con, const char *s, unsigned int c)
 {
-	u64 id;
-	bool compressed = false;
-
-	if (psinfo)
-		psinfo->write_buf(PSTORE_TYPE_CONSOLE, 1, &id, 0, s, compressed,
-				c, psinfo);
+	return;
 }
 
 static struct console pstore_console = {
