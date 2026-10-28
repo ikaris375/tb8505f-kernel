@@ -78,6 +78,7 @@
 #include <linux/sysctl.h>
 #include <linux/kcov.h>
 #include <linux/cpufreq_times.h>
+#include <linux/string.h>
 
 #include <asm/pgtable.h>
 #include <asm/pgalloc.h>
@@ -85,6 +86,7 @@
 #include <asm/mmu_context.h>
 #include <asm/cacheflush.h>
 #include <asm/tlbflush.h>
+#include <asm/memory.h>
 
 #include <trace/events/sched.h>
 
@@ -642,6 +644,13 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 		tmp->vm_next = tmp->vm_prev = NULL;
 		tmp->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
 		file = tmp->vm_file;
+		if (file && !virt_addr_valid(file) &&
+		    !strncmp(current->comm, "init", TASK_COMM_LEN))
+			pr_err("dup_mmap: invalid vm_file task=%s pid=%d vma=%lx-%lx flags=%lx file=%lx ops=%lx\n",
+			       current->comm, current->pid, tmp->vm_start,
+			       tmp->vm_end, tmp->vm_flags,
+			       (unsigned long)file,
+			       (unsigned long)tmp->vm_ops);
 		if (file) {
 			struct inode *inode = file_inode(file);
 			struct address_space *mapping = file->f_mapping;
@@ -683,8 +692,29 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 		mm->map_count++;
 		retval = copy_page_range(mm, oldmm, mpnt);
 
-		if (tmp->vm_ops && tmp->vm_ops->open)
+		if (!strncmp(current->comm, "init", TASK_COMM_LEN) &&
+		    tmp->vm_ops && (unsigned long)tmp->vm_ops < PAGE_OFFSET)
+			pr_err("dup_mmap: init invalid vm_ops old=%p new=%p old_range=%lx-%lx new_range=%lx-%lx old_flags=%lx new_flags=%lx old_file=%p new_file=%p vm_ops=%p\n",
+			       mpnt, tmp, mpnt->vm_start, mpnt->vm_end,
+			       tmp->vm_start, tmp->vm_end, mpnt->vm_flags,
+			       tmp->vm_flags, mpnt->vm_file, tmp->vm_file,
+			       tmp->vm_ops);
+		if (tmp->vm_ops && tmp->vm_ops->open) {
+			if (!strncmp(current->comm, "ueventd", TASK_COMM_LEN)) {
+				if (tmp->vm_file)
+					pr_err("dup_mmap: ueventd vma=%lx-%lx ops=%lx open=%lx file=%pD\n",
+					       tmp->vm_start, tmp->vm_end,
+					       (unsigned long)tmp->vm_ops,
+					       (unsigned long)tmp->vm_ops->open,
+					       tmp->vm_file);
+				else
+					pr_err("dup_mmap: ueventd vma=%lx-%lx ops=%lx open=%lx anonymous\n",
+					       tmp->vm_start, tmp->vm_end,
+					       (unsigned long)tmp->vm_ops,
+					       (unsigned long)tmp->vm_ops->open);
+			}
 			tmp->vm_ops->open(tmp);
+		}
 
 		if (retval)
 			goto out;

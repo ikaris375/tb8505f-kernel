@@ -3005,6 +3005,10 @@ static void proc_flush_task_mnt(struct vfsmount *mnt, pid_t pid, pid_t tgid)
 	struct qstr name;
 
 	name.name = buf;
+	if (!strncmp(current->comm, "hwservicemanage", TASK_COMM_LEN))
+		pr_err("proc_flush_task_mnt diag: current_pid=%d pid=%d tgid=%d current=%p mnt=%p buf=%p marker=%p stack=%p\n",
+		       current->pid, pid, tgid, current, mnt, buf, &name,
+		       task_stack_page(current));
 	name.len = snprintf(buf, sizeof(buf), "%d", pid);
 	/* no ->d_hash() rejects on procfs */
 	dentry = d_hash_and_lookup(mnt->mnt_root, &name);

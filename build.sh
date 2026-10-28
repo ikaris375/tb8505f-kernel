@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Lenovo TB8505F (MT6761) Kernel Build Script
+# Acer One 8 T482L (MT6761) Kernel Build Script
 # Version : 1.0
 # Author  : ikaris375
 #
@@ -22,6 +22,8 @@ TOOLCHAIN_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/$
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+cd "${SCRIPT_DIR}"
+
 TOOLCHAIN_ROOT="${SCRIPT_DIR}/toolchains"
 
 TOOLCHAIN_DIR="${TOOLCHAIN_ROOT}/arm-gnu-toolchain-11.3.rel1-x86_64-aarch64-none-linux-gnu"
@@ -33,7 +35,11 @@ export ARCH=arm64
 export CROSS_COMPILE="${TOOLCHAIN_BIN}/aarch64-none-linux-gnu-"
 
 JOBS="$(nproc)"
-DEFCONFIG="tb8766p1_64_bsp_defconfig"
+DEFCONFIG="acer_t482l_defconfig"
+OUT_DIR="${SCRIPT_DIR}/out/acer_t482l"
+BUILD_CONFIG="${OUT_DIR}/.config"
+BUILD_TMP_DIR="${SCRIPT_DIR}/build/tmp"
+export TMPDIR="${BUILD_TMP_DIR}"
 
 KCFLAGS="-Wno-error=array-bounds -Wno-error=maybe-uninitialized -Wno-error=stringop-truncation -Wno-error=packed-not-aligned -Wno-error=address-of-packed-member -Wno-error=misleading-indentation -Wno-error=restrict -Wno-error=stringop-overflow -Wno-error=memset-elt-size -Wno-error=missing-attributes -Wno-error=zero-length-bounds"
 
@@ -131,16 +137,24 @@ build_kernel() {
     START=$(date +%s)
 
     info "Checking kernel configuration..."
+    mkdir -p "${OUT_DIR}" "${BUILD_TMP_DIR}"
 
-    if [ ! -f ".config" ]; then
-        info "No .config found. Generating ${DEFCONFIG}..."
+    if [ ! -f "${BUILD_CONFIG}" ]; then
+        info "No build config found. Generating ${DEFCONFIG}..."
 
         make \
             ARCH=arm64 \
             CROSS_COMPILE="${CROSS_COMPILE}" \
+            KCONFIG_CONFIG="${BUILD_CONFIG}" \
             "${DEFCONFIG}" || error "Failed to generate .config"
 
         success "Configuration generated."
+    else
+        make \
+            ARCH=arm64 \
+            CROSS_COMPILE="${CROSS_COMPILE}" \
+            KCONFIG_CONFIG="${BUILD_CONFIG}" \
+            olddefconfig || error "Failed to update build config"
     fi
 
     info "Starting kernel build..."
@@ -148,7 +162,8 @@ build_kernel() {
     make \
         ARCH=arm64 \
         CROSS_COMPILE="${CROSS_COMPILE}" \
-        -j1 V=1 \
+        KCONFIG_CONFIG="${BUILD_CONFIG}" \
+        -j"${JOBS}" V=1 \
         KCFLAGS="${KCFLAGS}"
 
     END=$(date +%s)

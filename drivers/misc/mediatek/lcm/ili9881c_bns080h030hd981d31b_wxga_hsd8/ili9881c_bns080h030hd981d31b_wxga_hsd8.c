@@ -481,7 +481,11 @@ static void lcm_get_params(struct LCM_PARAMS *params)
 	params->dsi.fbk_div = 0x1;
 #endif
 	params->dsi.clk_lp_per_line_enable = 0;
-	params->dsi.esd_check_enable = 1;
+	/* Disable ESD/TE recovery during bring-up: the stock TE pin is not
+	 * configured as an input in the current kernel/DT combination, and
+	 * the panel reports 0x98 for DCS 0x0A instead of this tree's 0x87.
+	 */
+	params->dsi.esd_check_enable = 0;
 	params->dsi.customization_esd_check_enable = 0;
 	params->dsi.lcm_esd_check_table[0].cmd = 0x0A;
 	params->dsi.lcm_esd_check_table[0].count = 1;

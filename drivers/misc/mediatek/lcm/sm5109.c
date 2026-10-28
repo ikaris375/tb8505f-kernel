@@ -315,13 +315,22 @@ int lcm_power_enable_vdd3(void){
  EXPORT_SYMBOL(lcm_power_disable_vdd3);
 
  int lcm_backlight_enable(bool enable){
+	unsigned int mode = enable ? 11 : 10;
+
 	pr_info("[LCM]lcm_backlight_enable\n");
+
+	/* This optional SM5109 GPIO provider may not bind on other panels. */
+	if (IS_ERR_OR_NULL(_lcm_gpio) ||
+	    IS_ERR_OR_NULL(_lcm_gpio_mode[mode])) {
+		pr_warn("[LCM] backlight GPIO state unavailable; skipping\n");
+		return -ENODEV;
+	}
 
 	if(enable) {
 		msleep(80);
-		pinctrl_select_state(_lcm_gpio, _lcm_gpio_mode[11]);    //pull on backlight_en
+		pinctrl_select_state(_lcm_gpio, _lcm_gpio_mode[mode]);
 	} else {
-		pinctrl_select_state(_lcm_gpio, _lcm_gpio_mode[10]);    //pull off backlight_en
+		pinctrl_select_state(_lcm_gpio, _lcm_gpio_mode[mode]);
 	}
 
 	return 0;

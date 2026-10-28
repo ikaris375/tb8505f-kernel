@@ -1099,10 +1099,16 @@ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
 	return __send_signal(sig, info, t, group, from_ancestor_ns);
 }
 
-static void print_fatal_signal(int signr)
+static void print_fatal_signal(int signr, struct siginfo *info)
 {
 	struct pt_regs *regs = signal_pt_regs();
 	pr_info("potentially unexpected fatal signal %d.\n", signr);
+	if (info && current->mm)
+		pr_info("fatal signal detail: code=%d addr=%lx code=%lx-%lx data=%lx-%lx stack=%lx\n",
+			info->si_code, (unsigned long)info->si_addr,
+			current->mm->start_code, current->mm->end_code,
+			current->mm->start_data, current->mm->end_data,
+			current->mm->start_stack);
 
 #if defined(__i386__) && !defined(__arch_um__)
 	pr_info("code at %08lx: ", regs->ip);
@@ -2305,7 +2311,7 @@ relock:
 
 		if (sig_kernel_coredump(signr)) {
 			if (print_fatal_signals)
-				print_fatal_signal(ksig->info.si_signo);
+				print_fatal_signal(ksig->info.si_signo, &ksig->info);
 			proc_coredump_connector(current);
 			/*
 			 * If it was able to dump core, this kills all
